@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import "./App.css";
-import { Editor } from "slate-react";
+import { Editor, EventHook, BasicEditorProps } from "slate-react";
 import { Value } from "slate";
 
 const initialValue = Value.fromJSON({
@@ -30,15 +30,28 @@ class App extends Component {
     value: initialValue
   };
 
-  onChange = ({ value }: any) => {
+  onChange: BasicEditorProps["onChange"] = ({ value }) => {
     this.setState({ value });
+  };
+
+  // FIXME: `key` isn't exist on `event`
+  onKeyDown: EventHook = (event: any, editor, next) => {
+    if (event.key === "&") {
+      event.preventDefault();
+      editor.insertText("and");
+    }
+    return next();
   };
 
   render() {
     return (
       <div className="App">
         <header className="App-header">
-          <Editor value={this.state.value} onChange={this.onChange} />
+          <Editor
+            value={this.state.value}
+            onChange={this.onChange}
+            onKeyDown={this.onKeyDown}
+          />
         </header>
       </div>
     );
