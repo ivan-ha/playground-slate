@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import "./App.css";
-import { Editor, EventHook, BasicEditorProps } from "slate-react";
+import { Editor, EventHook, BasicEditorProps, Plugin } from "slate-react";
 import { Value } from "slate";
+import Code from "./Components/Code";
 
 const initialValue = Value.fromJSON({
   document: {
@@ -36,11 +37,21 @@ class App extends Component {
 
   // FIXME: `key` isn't exist on `event`
   onKeyDown: EventHook = (event: any, editor, next) => {
-    if (event.key === "&") {
+    if (event.key === "`" && event.ctrlKey) {
+      const isCode = editor.value.blocks.some(block => block!.type == "code");
       event.preventDefault();
-      editor.insertText("and");
+      editor.setBlocks(isCode ? "paragraph" : "code");
     }
     return next();
+  };
+
+  renderNode: Plugin["renderNode"] = (props, editor, next) => {
+    switch (props.node.type) {
+      case "code":
+        return <Code {...props} />;
+      default:
+        return next();
+    }
   };
 
   render() {
@@ -51,6 +62,7 @@ class App extends Component {
             value={this.state.value}
             onChange={this.onChange}
             onKeyDown={this.onKeyDown}
+            renderNode={this.renderNode}
           />
         </header>
       </div>
