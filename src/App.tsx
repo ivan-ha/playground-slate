@@ -3,7 +3,14 @@ import "./App.css";
 import { Editor, EventHook, BasicEditorProps, Plugin } from "slate-react";
 import { Value } from "slate";
 import Code from "./Components/Code";
-import Bold from "./Components/Bold";
+import { markHotKey } from "./Utils/markHotKey";
+
+const plugins = [
+  markHotKey({ key: "b", type: "bold" }),
+  markHotKey({ key: "i", type: "italic" }),
+  markHotKey({ key: "~", type: "strikethrough" }),
+  markHotKey({ key: "u", type: "underline" })
+];
 
 const initialValue = Value.fromJSON({
   document: {
@@ -47,10 +54,6 @@ class App extends Component {
           );
           editor.setBlocks(isCode ? "paragraph" : "code");
           break;
-
-        case "b":
-          editor.toggleMark("bold");
-          break;
       }
     }
     return next();
@@ -68,7 +71,15 @@ class App extends Component {
   renderMark: Plugin["renderMark"] = (props, editor, next) => {
     switch (props.mark.type) {
       case "bold":
-        return <Bold {...props} />;
+        return <strong>{props.children}</strong>;
+      case "code":
+        return <code>{props.children}</code>;
+      case "italic":
+        return <em>{props.children}</em>;
+      case "strikethrough":
+        return <del>{props.children}</del>;
+      case "underline":
+        return <u>{props.children}</u>;
       default:
         return next();
     }
@@ -79,6 +90,7 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <Editor
+            plugins={plugins}
             value={this.state.value}
             onChange={this.onChange}
             onKeyDown={this.onKeyDown}
