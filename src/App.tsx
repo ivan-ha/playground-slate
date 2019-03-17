@@ -12,27 +12,31 @@ const plugins = [
   markHotKey({ key: "u", type: "underline" })
 ];
 
-const initialValue = Value.fromJSON({
-  document: {
-    nodes: [
-      {
-        object: "block",
-        type: "paragraph",
-        nodes: [
-          {
-            object: "text",
-            leaves: [
-              {
-                object: "leaf",
-                text: "A line of text in a paragraph."
-              }
-            ]
-          }
-        ]
-      }
-    ]
+const existingValue = JSON.parse(localStorage.getItem("content") as string);
+
+const initialValue = Value.fromJSON(
+  existingValue || {
+    document: {
+      nodes: [
+        {
+          object: "block",
+          type: "paragraph",
+          nodes: [
+            {
+              object: "text",
+              leaves: [
+                {
+                  object: "leaf",
+                  text: "A line of text in a paragraph."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
   }
-});
+);
 
 class App extends Component {
   state = {
@@ -40,6 +44,8 @@ class App extends Component {
   };
 
   onChange: BasicEditorProps["onChange"] = ({ value }) => {
+    const content = JSON.stringify(value.toJSON());
+    localStorage.setItem("content", content);
     this.setState({ value });
   };
 
