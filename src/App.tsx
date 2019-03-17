@@ -3,6 +3,7 @@ import "./App.css";
 import { Editor, EventHook, BasicEditorProps, Plugin } from "slate-react";
 import { Value } from "slate";
 import Code from "./Components/Code";
+import Bold from "./Components/Bold";
 
 const initialValue = Value.fromJSON({
   document: {
@@ -37,10 +38,20 @@ class App extends Component {
 
   // FIXME: `key` isn't exist on `event`
   onKeyDown: EventHook = (event: any, editor, next) => {
-    if (event.key === "`" && event.ctrlKey) {
-      const isCode = editor.value.blocks.some(block => block!.type == "code");
+    if (event.ctrlKey) {
       event.preventDefault();
-      editor.setBlocks(isCode ? "paragraph" : "code");
+      switch (event.key) {
+        case "`":
+          const isCode = editor.value.blocks.some(
+            block => block!.type == "code"
+          );
+          editor.setBlocks(isCode ? "paragraph" : "code");
+          break;
+
+        case "b":
+          editor.toggleMark("bold");
+          break;
+      }
     }
     return next();
   };
@@ -49,6 +60,15 @@ class App extends Component {
     switch (props.node.type) {
       case "code":
         return <Code {...props} />;
+      default:
+        return next();
+    }
+  };
+
+  renderMark: Plugin["renderMark"] = (props, editor, next) => {
+    switch (props.mark.type) {
+      case "bold":
+        return <Bold {...props} />;
       default:
         return next();
     }
@@ -63,6 +83,7 @@ class App extends Component {
             onChange={this.onChange}
             onKeyDown={this.onKeyDown}
             renderNode={this.renderNode}
+            renderMark={this.renderMark}
           />
         </header>
       </div>
